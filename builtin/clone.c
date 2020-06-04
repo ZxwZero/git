@@ -944,7 +944,7 @@ static int path_exists(const char *path)
 int cmd_clone(int argc, const char **argv, const char *prefix)
 {
 	int is_bundle = 0, is_local;
-	const char *repo_name, *repo, *work_tree, *git_dir;
+	const char *repo_name, *repo, *display_repo, *work_tree, *git_dir;
 	char *path, *dir;
 	int dest_exists;
 	const struct ref *refs, *remote_head;
@@ -999,11 +999,13 @@ int cmd_clone(int argc, const char **argv, const char *prefix)
 
 	path = get_repo_path(repo_name, &is_bundle);
 	if (path)
-		repo = absolute_pathdup(repo_name);
+		display_repo = repo = absolute_pathdup(repo_name);
 	else if (!strchr(repo_name, ':'))
 		die(_("repository '%s' does not exist"), repo_name);
-	else
+	else {
 		repo = repo_name;
+		display_repo = transport_anonymize_url(repo);
+	}
 
 	/* no need to be strict, transport_set_option() will validate it again */
 	if (option_depth && atoi(option_depth) < 1)
@@ -1020,7 +1022,7 @@ int cmd_clone(int argc, const char **argv, const char *prefix)
 		die(_("destination path '%s' already exists and is not "
 			"an empty directory."), dir);
 
-	strbuf_addf(&reflog_msg, "clone: from %s", repo);
+	strbuf_addf(&reflog_msg, "clone: from %s", display_repo);
 
 	if (option_bare)
 		work_tree = NULL;
