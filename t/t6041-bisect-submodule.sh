@@ -10,7 +10,11 @@ git_bisect () {
 	ls -1pR * >>expect &&
 	tar cf "$TRASH_DIRECTORY/tmp.tar" * &&
 	GOOD=$(git rev-parse --verify HEAD) &&
-	git checkout "$1" &&
+	$OVERWRITING_FAIL git checkout "$1" &&
+	if test -n "$OVERWRITING_FAIL"
+	then
+		return
+	fi &&
 	echo "foo" >bar &&
 	git add bar &&
 	git commit -m "bisect bad" &&
@@ -27,6 +31,6 @@ git_bisect () {
 	git bisect bad $BAD
 }
 
-test_submodule_switch "git_bisect"
+test_submodule_switch_func "git_bisect"
 
 test_done
